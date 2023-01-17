@@ -1,0 +1,73 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+
+    id 'com.github.johnrengelman.shadow' version "7.1.2"
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+group 'com.civilization'
+archivesBaseName = 'civil_utils_lib'
+version '1.0'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
+}
+
+configurations {
+    embed
+    implementation.extendsFrom(embed)
+}
+
+dependencies {
+    //Discord
+    embed ("net.dv8tion:JDA:5.0.0-alpha.22")
+    embed ('commons-io:commons-io:2.11.0')
+    embed ('org.jfree:jfreechart:1.5.3')
+
+    //Logger
+    embed group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.19.0'
+    embed group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.19.0'
+    embed group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.19.0'
+//    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j18-impl', version: '2.15.0'
+}
+
+shadowJar {
+    archiveClassifier = ''
+    configurations = [project.configurations.embed]
+
+    relocate 'net.dv8tion', 'civil.net.dv8tion'
+    relocate 'org.intellij', 'civil.org.intellij'
+    relocate 'org.apache', 'civil.org.apache'
+    relocate 'org.slf4j', 'civil.org.slf4j'
+    relocate 'org.jetbrains', 'civil.org.jetbrains'
+    relocate 'com.sun', 'civil.com.sun'
+    relocate 'kotlin', 'civil.kotlin'
+    relocate 'commons-io', 'civil.commons-io'
+    relocate 'org.jfree', 'civil.org.jfree'
+
+    exclude("META-INF/maven/**")
+    exclude("META-INF/services/**")
+}
+
+artifacts {
+    archives shadowJar
+}
+
+tasks.build.dependsOn(tasks.shadowJar)
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
